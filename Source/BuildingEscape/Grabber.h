@@ -36,16 +36,21 @@ private:
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
 	UInputComponent* InputComponent = nullptr;
 
-	//Check if there is a valid InputComponent attached to this actor
+	// Check if there is a valid InputComponent attached to this actor
 	void SetupInputComponent();
-	//Check if there is a valid Physics Handle attached to this actor
+	// Check if there is a valid Physics Handle attached to this actor
 	void CheckPhysicsHandle();
 
-	// Primary function
+	// Primary function. Grab onto a movable object in the world.
 	void Grab();
-	// Primary function
+	// Primary function. Release the object you are holding.
 	void Release();
 
 	// Returns the first actor within (float) Reach that has a Physics Body
 	FHitResult GetFirstPhysicsBodyInReach() const; 
+
+	// Returns the end of the players reach
+	FVector GetReach() const;
+
+	FVector GetParentWorldPos() const;
 };
