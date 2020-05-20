@@ -1,4 +1,9 @@
-// Copyright Christian Edge, 2020 
+// Copyright Christian Edge, 2020
+/*
+ * OpenDoor gets attached to a movable object that will swing like a door when
+ * a trigger volume has enough mass. Essentially a pressure plate activates the
+ * door.
+ * */
 
 #pragma once
 
@@ -27,6 +32,9 @@ public:
 
 	void CloseDoor(float DeltaTime);
 
+	// Calculates the total mass of objects within the trigger volume. 
+	float TotalMassInTrigVol() const;
+
 private:
 
 	float CurrentYaw, InitialYaw;
@@ -43,7 +51,11 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CloseDelay = 3.0f;
-	float CloseTime = 0.0f;	
+	float CloseTime = 0.0f;
+
+	//Amount of total mass needed to trigger door opening
+	UPROPERTY(EditAnywhere)
+	float TriggerMass = 0.0f;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate;

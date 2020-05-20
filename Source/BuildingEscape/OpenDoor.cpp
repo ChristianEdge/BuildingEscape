@@ -2,10 +2,12 @@
 
 
 #include "OpenDoor.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
 
+#define OUT
 
 UOpenDoor::UOpenDoor()
 {
@@ -36,19 +38,18 @@ void UOpenDoor::BeginPlay()	// Called when the game starts
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {	// Called every frame
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (PressurePlate && PressurePlate->IsOverlappingActor(ActorThatEnters))
+	
+	// Trigger volume opnes door, time closes it
+	if (TotalMassInTrigVol() > TriggerMass)
 	{
-		OpenDoor(DeltaTime);
-		//UE_LOG(LogTemp, Warning, TEXT("Door opening"));
+		OpenDoor(DeltaTime); //UE_LOG(LogTemp, Warning, TEXT("Door opening"));
 		CloseTime = GetWorld()->GetTimeSeconds() + CloseDelay;
 	}
 	else 
 	{
 		if (GetWorld()->GetTimeSeconds() > CloseTime)
 		{
-			CloseDoor(DeltaTime);
-			//UE_LOG(LogTemp, Warning, TEXT("Door closing"));
+			CloseDoor(DeltaTime); //UE_LOG(LogTemp, Warning, TEXT("Door closing"));
 		}
 	}
 }
@@ -81,4 +82,24 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 	DoorRotation.Yaw = CurrentYaw;
 
 	GetOwner()->SetActorRotation(DoorRotation);
+}
+
+// Calculates the total mass of objects within the trigger volume. 
+float UOpenDoor::TotalMassInTrigVol() const
+{
+	float TotalMass = 0.0f;
+
+	// Find all actors overlapping the Trigger Volume
+	TArray<AActor*> OverlappingActors;
+	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+
+	// Sum the mass of those actors
+	for (int i = 0; i < OverlappingActors.Num(); ++i)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Actor : %s"), *OverlappingActors[i]->GetName());	//GetParentActor()->GetName());
+		// Add sum to TotalMass
+		TotalMass += OverlappingActors[i]->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+	}
+
+	return TotalMass;
 }
