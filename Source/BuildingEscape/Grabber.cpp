@@ -47,10 +47,11 @@ void UGrabber::Grab()
 	{
 		UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
 
-		PhysicsHandle->GrabComponentAtLocation(
+		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,
 			NAME_None,
-			GetReach()
+			GetReach(),
+			GetParentWorldRot()
 		);
 	}
 }
@@ -146,4 +147,15 @@ FVector UGrabber::GetParentWorldPos() const
 		OUT ViewPointRotation
 	);
 	return ViewPointLocation;
+}
+
+FRotator UGrabber::GetParentWorldRot() const
+{
+	FVector ViewPointLocation = GetOwner()->GetActorLocation();
+	FRotator ViewPointRotation = GetOwner()->GetActorRotation(); 
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT ViewPointLocation,
+		OUT ViewPointRotation
+	);
+	return ViewPointRotation;
 }

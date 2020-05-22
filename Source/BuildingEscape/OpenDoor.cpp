@@ -2,6 +2,7 @@
 
 
 #include "OpenDoor.h"
+#include "Components/AudioComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -20,15 +21,9 @@ void UOpenDoor::BeginPlay()	// Called when the game starts
 {
 	Super::BeginPlay();
 
-	if (!PressurePlate)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s has no PressurePlate set!"), *GetOwner()->GetName());
-	}
+	SetupPressurePlate();
 
-	if (!ActorThatEnters)
-	{
-		ActorThatEnters = GetWorld()->GetFirstPlayerController()->GetPawn();
-	}
+	SetupAudioComponent();
 
 	InitialYaw = GetOwner()->GetActorRotation().Yaw;
 	CurrentYaw = InitialYaw;
@@ -72,6 +67,14 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	//UE_LOG(LogTemp, Warning, TEXT("Yaw = %f"), GetOwner()->GetActorRotation().Yaw);
 	
 	GetOwner()->SetActorRotation(DoorRotation);
+
+	if (!AudioComponent) { return; }
+	if (!AudioComponent->IsPlaying() && bIsClosed)
+	{
+		AudioComponent->Play();
+		bIsClosed = false;
+		bIsOpen = true;
+	}
 }
 
 void UOpenDoor::CloseDoor(float DeltaTime)
@@ -82,6 +85,14 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 	DoorRotation.Yaw = CurrentYaw;
 
 	GetOwner()->SetActorRotation(DoorRotation);
+
+	if (!AudioComponent) { return; }
+	if (!AudioComponent->IsPlaying() && bIsOpen)
+	{
+		AudioComponent->Play();
+		bIsClosed = true;
+		bIsOpen = false;
+	}
 }
 
 // Calculates the total mass of objects within the trigger volume. 
@@ -91,15 +102,32 @@ float UOpenDoor::TotalMassInTrigVol() const
 
 	// Find all actors overlapping the Trigger Volume
 	TArray<AActor*> OverlappingActors;
+	if (!PressurePlate) { return TotalMass; }
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	// Sum the mass of those actors
-	for (int i = 0; i < OverlappingActors.Num(); ++i)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("Actor : %s"), *OverlappingActors[i]->GetName());	//GetParentActor()->GetName());
-		// Add sum to TotalMass
-		TotalMass += OverlappingActors[i]->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+	for (AActor* Actor : OverlappingActors)
+	{ 
+		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass(); 
 	}
 
 	return TotalMass;
+}
+
+void UOpenDoor::SetupAudioComponent()
+{
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+
+	if (!AudioComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AudioComponent missing from actor %s"), *GetOwner()->GetName());
+	}
+}
+
+void UOpenDoor::SetupPressurePlate()
+{
+	if (!PressurePlate)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s has no PressurePlate set!"), *GetOwner()->GetName());
+	}
 }

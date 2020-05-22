@@ -1,7 +1,7 @@
 // Copyright Christian Edge, 2020
 /*
  * OpenDoor gets attached to a movable object that will swing like a door when
- * a trigger volume has enough mass. Essentially a pressure plate activates the
+ * a trigger volume has detected enough mass. Essentially: a pressure plate activates the
  * door.
  * */
 
@@ -58,8 +58,15 @@ private:
 	float TriggerMass = 0.0f;
 
 	UPROPERTY(EditAnywhere)
-	ATriggerVolume* PressurePlate;
+	ATriggerVolume* PressurePlate = nullptr;
 
-	UPROPERTY(EditAnywhere)
-	AActor* ActorThatEnters;
+	UPROPERTY()
+	UAudioComponent* AudioComponent = nullptr;
+
+	void SetupAudioComponent();
+	void SetupPressurePlate();
+
+	// Tracks door position for audio cues
+	bool bIsOpen = false;
+	bool bIsClosed = true; //Doors start closed
 };

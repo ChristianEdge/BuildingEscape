@@ -33,7 +33,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float Reach = 230.0f;
 
+	UPROPERTY()
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+	UPROPERTY()
 	UInputComponent* InputComponent = nullptr;
 
 	// Check if there is a valid InputComponent attached to this actor
@@ -53,4 +55,5 @@ private:
 	FVector GetReach() const;
 
 	FVector GetParentWorldPos() const;
+	FRotator GetParentWorldRot() const;
 };
